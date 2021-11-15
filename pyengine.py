@@ -1,4 +1,5 @@
 from pygame import*
+from random import*
 
 # creates a clock that counts frames, fps and time
 clock = time.Clock()
@@ -19,6 +20,12 @@ if pads:
     gamepad_connected = True
 else:
     gamepad_connected = False
+
+
+
+# return chance (percentage)
+def chance(x):
+    return (x < randint(1, 101))
 
 
 # creates a window using width and height
