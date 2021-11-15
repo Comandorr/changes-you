@@ -10,18 +10,18 @@ scene_car = []
 ground = []
 
 wind = []
-WIND = True
+WIND = False
 wind_rapid = 5 # number from 1 to 100
 wind_speed = 10
 
 rain = []
 RAIN = False
 rain_rapid = 5
-rain_speed = 5
+rain_speed = 7
 
 
 class WindDust(SimpleSprite):
-    def __init__(self, x, y, size = None):
+    def __init__(self, x, y, size = (8, 4)):
         img = 'images/wind_sand.png'
         super().__init__(img, x, y, size)
         wind.append(self)
@@ -34,14 +34,16 @@ class WindDust(SimpleSprite):
 
 
 class RainDrop(SimpleSprite):
-    def __init__(self, x, y, size = None):
+    def __init__(self, x, y, size = (4, 8)):
         img = 'images/raindrop.png'
         super().__init__(img, x, y, size)
-        self.destination = randint(int(win_h/10), win_h)
+        self.destination = randint(int(win_h/2), win_h)
         rain.append(self)
 
     def update(self):
         self.y += rain_speed
+        if WIND:
+            self.x -= wind_speed
         if self.y >= self.destination:
             scene_car.remove(self)
             rain.remove(self)
@@ -85,7 +87,16 @@ for x in range(win_w//64+1):
 
 
 run = True
-while run_game(run):
+while run:
+    for e in event.get():
+        if e.type == QUIT:
+            run = False
+        if e.type == KEYDOWN:
+            if e.key == K_1:
+                WIND = not WIND
+            if e.key == K_2:
+                RAIN = not RAIN
+
     fill_window(black)
     for i in ground.copy():
         i.reset()
@@ -94,12 +105,14 @@ while run_game(run):
             ground.remove(i)
 
     if WIND:
-        if chance(wind_rapid):
-            scene_car.append(WindDust(x = win_w, y = randint(0, win_h)))
+        for y in range(0, win_h):
+            if chance(wind_rapid, max = 1001):
+                scene_car.append(WindDust(x = win_w, y = y))
 
     if RAIN:
-        if chance(rain_rapid):
-            scene_car.append(RainDrop(x = randint(0, win_w*2), y = 0))
+        for x in range(0, win_w*2):
+            if chance(rain_rapid, max = 1001):
+                scene_car.append(RainDrop(x, y = 0))
 
     if ground[-1].x <= world_x + win_w/2:
         x = ground[-1].x

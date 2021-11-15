@@ -24,8 +24,8 @@ else:
 
 
 # return chance (percentage)
-def chance(x):
-    return (x < randint(1, 101))
+def chance(x, max = 101):
+    return (x > randint(1, max))
 
 
 # creates a window using width and height
@@ -42,8 +42,8 @@ def create_window(w, h):
 # checks for player trying to quit the game, requires a variable to run
 # designed to use as a condition for a main while cycle of the game
 def run_game(run):
-    for e in event.get():
-        if e.type == QUIT:
+    for x in event.get():
+        if x.type == QUIT:
             run = False
     return run
 
