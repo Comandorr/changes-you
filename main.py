@@ -1,13 +1,12 @@
-from pygame import*
 from pyengine import*
 from random import*
 mixer.init()
 music = mixer.Channel(1)
 paint_it_black = mixer.Sound('sounds/paint.mp3')
-engine_start = mixer.Sound('sounds/engine_start.mp3')
 
 create_window(1920, 1080)
-from pyengine import win_w, win_h, center_x, center_y
+#create_window(800, 600)
+from pyengine import win_w, win_h, center_x, center_y, window
 mouse.set_visible(False)
 world_x = center_x
 scene_car = Group()
@@ -15,6 +14,8 @@ ground = Group()
 crates = Group()
 tires = Group()
 walls = Group()
+walls_chance = 3
+gears = 0
 
 wind = Group()
 WIND = False
@@ -27,6 +28,24 @@ rain_rapid = 5
 rain_speed = 7
 
 ENGINE = True
+
+
+class SmokeParticle(SimpleSprite):
+    def __init__(self, x, y):
+        img = 'images/tile_0008.png'
+        super().__init__(img, x, y, size=(16, 16))
+        self.add(wind, scene_car)
+
+    def update(self):
+        if self.image.get_alpha() > 0:
+            self.image.set_alpha(self.image.get_alpha()-3)
+            self.y -= 2
+            self.x += 2
+            self.image = transform.scale(self.image, (self.rect.width + 2, self.rect.height + 2))
+            self.rect.width += 2
+            self.rect.height += 2
+            
+            
 
 class WindDust(SimpleSprite):
     def __init__(self, x, y, size = (8, 4)):
@@ -65,17 +84,20 @@ class Car(SimpleSprite):
         self.frame = 0
         self.fps = 0
         self.aniframe = 10
+        self.hitbox = Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height/2)
+        self.kilometers = 0
+        self.original_height = self.rect.height
 
     def animate(self):
         self.fps += 1
         if self.frame == 0 and self.fps >= self.aniframe:
             self.frame = 1
-            self.image = transform.scale(self.original, (62, 24))
+            self.image = transform.scale(self.original, (self.rect.width, self.original_height))
             self.y -= 1
             self.fps = 0
         elif self.frame == 1 and self.fps >= self.aniframe:
             self.frame = 0
-            self.image = transform.scale(self.original, (62, 23))
+            self.image = transform.scale(self.original, (self.rect.width, self.original_height - 1))
             self.y += 1
             self.fps = 0
 
@@ -95,9 +117,14 @@ class Car(SimpleSprite):
         self.aniframe = 5
         SimpleSprite('images/black_square_50.png', self.x, self.y+14).add(scene_car, tires)
         SimpleSprite('images/black_square_50.png', self.x, self.y+20).add(scene_car, tires)
+        self.kilometers += self.speed
+        if chance(10):
+            SmokeParticle(self.x - 16, self.rect.bottom - 16)
         
 
     def update(self):
+        self.hitbox.x = self.rect.x
+        self.hitbox.y = self.rect.y + self.rect.height/2
         self.aniframe = 10
         if ENGINE:
             keys = key.get_pressed()
@@ -109,17 +136,17 @@ class Car(SimpleSprite):
         self.animate()
         
 
-
-car = Car('images/rounded_red.png', center_x/2, center_y, size=(62, 24), speed = 5)
-shadow = SimpleSprite('images/shadow.png', car.x, car.y, size = (62, 24))
+car = Car('images/rounded_yellow.png', center_x/2, center_y, size=(72, 24), speed = 7)
+shadow = SimpleSprite('images/shadow.png', car.x, car.y, size = (72, 24))
 for x in range(win_w//64+1):
     for y in range(win_h//64+1):
         SimpleSprite('images/mapTile_017.png', x*64, y*64).add(scene_car, ground)
 
 
 cutscene = True
+run = True
 WIND = True
-car.x = -64
+car.x = -84
 R0 = SimpleSprite('images/black_square.png', 0, 0, (win_w, win_h))
 R1 = SimpleSprite('images/black_square.png', 0, 0, (win_w, win_h/5))
 R2 = SimpleSprite('images/black_square.png', 0, win_h*0.8, (win_w, win_h/5))
@@ -136,6 +163,7 @@ while cutscene:
     time_passed = time.get_ticks() - start_time
     for e in event.get():
         if e.type == QUIT:
+            cutscene = False
             run = False
         if e.type == KEYDOWN:
             if e.key == K_ESCAPE or e.key == K_SPACE:
@@ -207,8 +235,9 @@ while cutscene:
 button_restart = SimpleText(' начать заново ', 48, center_x, center_y, color=white, background=black)
 button_restart.position[0] = center_x - button_restart.rect.width/2
 button_restart.position[1] = center_y - button_restart.rect.height/2
-car.speed = 7
-run = True
+kilometers_text = SimpleText('км', 24, win_w-100, 0, background=gray)
+location_text = SimpleText('Пустыня', 24, win_w-150, kilometers_text.rect.height, background=gray)
+
 while run:
     for e in event.get():
         if e.type == QUIT:
@@ -220,7 +249,6 @@ while run:
                 RAIN = not RAIN        
         if e.type == MOUSEBUTTONDOWN:
             if not ENGINE:
-                print(mouse.get_pos())
                 if button_restart.rect.collidepoint(mouse.get_pos()):
                     sprite.spritecollide(car, walls, True)
                     car.replace(center_x/2, center_y)
@@ -248,39 +276,50 @@ while run:
         for y in range(win_h//64+1):
             SimpleSprite('images/mapTile_017.png', x, y*64).add(scene_car, ground)
             if chance(1):
-                SimpleSprite('images/crate_22.png', x, y*64).add(scene_car, crates)
-            if chance(3):
+                SimpleSprite('images/crate_23.png', x, y*64).add(scene_car, crates)
+            elif chance(walls_chance):
                 SimpleSprite('images/block_02.png', x, y*64).add(scene_car, walls)
     
     ground.reset()
     crates.reset()
-    tires.reset()
     crates.reset()
-    walls.reset()
+    tires.reset()
+    
 
-    car.reset()
-    car.update()
     shadow.replace(car.x-3, car.y+10)
     shadow.reset()
+    car.update()
+    car.reset()
+    walls.reset()
+    
 
     wind.update()
     wind.reset()
     rain.update()
     rain.reset()
-
-    for c in sprite.spritecollide(car, crates, False):
-        c.image = image.load('images/crate_32.png')
-        
-    if sprite.spritecollide(car, walls, False) and ENGINE:
-        ENGINE = False
-        time_dead = time.get_ticks()
+    
+    for c in crates.sprites():
+        if c.rect.colliderect(car.hitbox) and ENGINE:
+            c.image = image.load('images/crate_32.png')
+            c.rect.width = 0
+            c.rect.height = 0
+            
+    for w in walls.sprites():
+        if w.rect.colliderect(car.hitbox) and ENGINE:
+            ENGINE = False
+            time_dead = time.get_ticks()
 
     if not ENGINE:
         if (time.get_ticks() - time_dead) > 1000:
             mouse.set_visible(True)
             button_restart.reset()
 
-    fps = SimpleText(str(int(clock.get_fps())), 24, 0, 0, background=white)
-    fps.reset()
+    kilometers_text.setText(str(car.kilometers//10) + ' м')
+    kilometers_text.position[0] = win_w - kilometers_text.rect.width
+    kilometers_text.reset()
+    location_text.position[0] = win_w - location_text.rect.width
+    location_text.reset()
+    walls_chance = 3 + car.kilometers//10//1000
+    
     display.update()
     clock.tick(60)
