@@ -10,18 +10,18 @@ create_window(1920, 1080)
 from pyengine import win_w, win_h, center_x, center_y
 mouse.set_visible(False)
 world_x = center_x
-world_generated = []
-scene_car = []
-ground = []
-crates = []
-tires = []
+scene_car = Group()
+ground = Group()
+crates = Group()
+tires = Group()
+walls = Group()
 
-wind = []
+wind = Group()
 WIND = False
 wind_rapid = 4 # number from 1 to 100
 wind_speed = 15
 
-rain = []
+rain = Group()
 RAIN = False
 rain_rapid = 5
 rain_speed = 7
@@ -32,7 +32,7 @@ class WindDust(SimpleSprite):
     def __init__(self, x, y, size = (8, 4)):
         img = 'images/wind_sand.png'
         super().__init__(img, x, y, size)
-        wind.append(self)
+        self.add(wind, scene_car)
 
     def update(self):
         self.x -= wind_speed
@@ -46,15 +46,14 @@ class RainDrop(SimpleSprite):
         img = 'images/raindrop.png'
         super().__init__(img, x, y, size)
         self.destination = randint(int(win_h/2), win_h)
-        rain.append(self)
+        self.add(rain, scene_car)
 
     def update(self):
         self.y += rain_speed
         if WIND:
             self.x -= wind_speed
         if self.y >= self.destination:
-            scene_car.remove(self)
-            rain.remove(self)
+            self.kill()
 
 
 
@@ -94,10 +93,9 @@ class Car(SimpleSprite):
             i.x -= self.speed
         world_x += self.speed
         self.aniframe = 5
-        scene_car.append(SimpleSprite('images/black_square_50.png', self.x, self.y+14))
-        tires.append(scene_car[-1])
-        scene_car.append(SimpleSprite('images/black_square_50.png', self.x, self.y+20))
-        tires.append(scene_car[-1])
+        SimpleSprite('images/black_square_50.png', self.x, self.y+14).add(scene_car, tires)
+        SimpleSprite('images/black_square_50.png', self.x, self.y+20).add(scene_car, tires)
+        
 
     def update(self):
         self.aniframe = 10
@@ -115,11 +113,8 @@ class Car(SimpleSprite):
 car = Car('images/rounded_red.png', center_x/2, center_y, size=(62, 24), speed = 5)
 shadow = SimpleSprite('images/shadow.png', car.x, car.y, size = (62, 24))
 for x in range(win_w//64+1):
-    world_generated.append(x*64)
     for y in range(win_h//64+1):
-        scene_car.append(SimpleSprite('images/mapTile_017.png', x*64, y*64))
-        ground.append(scene_car[-1])
-
+        SimpleSprite('images/mapTile_017.png', x*64, y*64).add(scene_car, ground)
 
 
 cutscene = True
@@ -150,18 +145,17 @@ while cutscene:
     for i in ground.copy():
         i.reset()
         if i.x <= -64:
-            scene_car.remove(i)
-            ground.remove(i)
-
-    if ground[-1].x <= world_x + win_w/2:
-        x = ground[-1].x
+            i.kill()
+            
+    if ground.sprites()[-1].x <= world_x + win_w/2:
+        x = ground.sprites()[-1].x
         for y in range(win_h//64+1):
-            scene_car.append(SimpleSprite('images/mapTile_017.png', x+64, y*64))
-            ground.append(scene_car[-1])  
+            SimpleSprite('images/mapTile_017.png', x+64, y*64).add(scene_car, ground)
+            
 
     fill_window(black)
-    for g in ground + tires:
-        g.reset()
+    ground.reset()
+    tires.reset()
     car.animate()
     shadow.replace(car.x-3, car.y+10)
     shadow.reset()
@@ -169,10 +163,9 @@ while cutscene:
     if WIND:
         for y in range(0, win_h):
             if chance(wind_rapid, max = 1001):
-                scene_car.append(WindDust(x = win_w, y = y))
-    for w in wind:
-        w.update()
-        w.reset()
+                WindDust(x = win_w, y = y).add(scene_car)
+    wind.update()
+    wind.reset()
     R0.reset()
     if R0.image.get_alpha() > 0:
         R0.image.set_alpha(R0.image.get_alpha()-1)
@@ -190,10 +183,8 @@ while cutscene:
     if time_passed > 8500:
         if car.x < center_x/4:
             car.x += 5
-            scene_car.append(SimpleSprite('images/black_square_50.png', car.x, car.y+14))
-            tires.append(scene_car[-1])
-            scene_car.append(SimpleSprite('images/black_square_50.png', car.x, car.y+20))
-            tires.append(scene_car[-1])
+            SimpleSprite('images/black_square_50.png', car.x, car.y+14).add(scene_car, tires)
+            SimpleSprite('images/black_square_50.png', car.x, car.y+20).add(scene_car, tires)
         else:
             car.right()
     if time_passed > 12500:
@@ -212,6 +203,10 @@ while cutscene:
     display.update()
     clock.tick(60)
 
+
+button_restart = SimpleText(' начать заново ', 48, center_x, center_y, color=white, background=black)
+button_restart.position[0] = center_x - button_restart.rect.width/2
+button_restart.position[1] = center_y - button_restart.rect.height/2
 car.speed = 7
 run = True
 while run:
@@ -222,64 +217,68 @@ while run:
             if e.key == K_1:
                 WIND = not WIND
             if e.key == K_2:
-                RAIN = not RAIN
-            if e.key == K_d:
-                ENGINE = not ENGINE
-                if ENGINE:
-                    engine_start.play()
+                RAIN = not RAIN        
+        if e.type == MOUSEBUTTONDOWN:
+            if not ENGINE:
+                print(mouse.get_pos())
+                if button_restart.rect.collidepoint(mouse.get_pos()):
+                    sprite.spritecollide(car, walls, True)
+                    car.replace(center_x/2, center_y)
+                    ENGINE = True
+                    mouse.set_visible(False)
+
 
     fill_window(black)
-    for i in ground.copy():
-        i.reset()
+    for i in ground.sprites() + crates.sprites() + tires.sprites():
         if i.x <= -64:
-            scene_car.remove(i)
-            ground.remove(i)
-    for i in crates.copy():
-        i.reset()
-        if i.x <= -64:
-            scene_car.remove(i)
-            crates.remove(i)
-
-    for i in tires.copy():
-        i.reset()
-        if i.x <= -64:
-            scene_car.remove(i)
-            tires.remove(i)
+            i.kill()
 
     if WIND:
         for y in range(0, win_h):
             if chance(wind_rapid, max = 1001):
-                scene_car.append(WindDust(x = win_w, y = y))
+                WindDust(x = win_w, y = y).add(scene_car)
 
     if RAIN:
         for x in range(0, int(win_w/2)):
             if chance(rain_rapid, max = 1001):
-                scene_car.append(RainDrop(x*4, y = 0))
+                RainDrop(x*4, y = 0).add(scene_car)
 
-    if ground[-1].x <= win_w:
-        x = ground[-1].x
+    if ground.sprites()[-1].x <= win_w:
+        x = ground.sprites()[-1].x+64
         for y in range(win_h//64+1):
-            scene_car.append(SimpleSprite('images/mapTile_017.png', x+64, y*64))
-            ground.append(scene_car[-1])
-            if chance(2):
-                img = choice(['barrel_red_down.png', 'tanks_barrelGreen.png', 'tanks_barrelGrey.png', 'tanks_tankDesert_body1.png', 'tanks_tankDesert_body3.png'])
-                scene_car.append(SimpleSprite('images/garbage/'+img, x+64, y*64))
-                crates.append(scene_car[-1])
-            if chance(2):
-                img = choice(['01', '02', '03', '04', '05', '16', '18', '31', '32', '33'])
-                scene_car.append(SimpleSprite('images/tiles/mapTile_0'+img+'.png', x+64, y*64))
-                crates.append(scene_car[-1])
+            SimpleSprite('images/mapTile_017.png', x, y*64).add(scene_car, ground)
+            if chance(1):
+                SimpleSprite('images/crate_22.png', x, y*64).add(scene_car, crates)
+            if chance(3):
+                SimpleSprite('images/block_02.png', x, y*64).add(scene_car, walls)
     
+    ground.reset()
+    crates.reset()
+    tires.reset()
+    crates.reset()
+    walls.reset()
+
+    car.reset()
     car.update()
     shadow.replace(car.x-3, car.y+10)
     shadow.reset()
-    car.reset()
-    for c in crates:
-        c.reset()
-    for particle in wind+rain:
-        particle.update()
-        particle.reset()
+
+    wind.update()
+    wind.reset()
+    rain.update()
+    rain.reset()
+
+    for c in sprite.spritecollide(car, crates, False):
+        c.image = image.load('images/crate_32.png')
         
+    if sprite.spritecollide(car, walls, False) and ENGINE:
+        ENGINE = False
+        time_dead = time.get_ticks()
+
+    if not ENGINE:
+        if (time.get_ticks() - time_dead) > 1000:
+            mouse.set_visible(True)
+            button_restart.reset()
 
     fps = SimpleText(str(int(clock.get_fps())), 24, 0, 0, background=white)
     fps.reset()

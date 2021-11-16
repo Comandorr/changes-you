@@ -25,7 +25,7 @@ else:
 
 # return chance (percentage)
 def chance(x, max = 101):
-    return (x > randint(1, max))
+    return (x >= randint(1, max))
 
 
 # creates a window using width and height
@@ -94,11 +94,19 @@ def combined_control(self):
     gamepad_control(self)
 
 
+# custom Group class, can reset itself
+class Group(sprite.Group):
+    def reset(self):
+        for s in self.sprites():
+            s.reset()
+
+
 # class for simple sprites, containing image (path, size) and coordinates
 # reset = blit image into the game window
 # move = replace sprite to new coordinates
 class SimpleSprite(sprite.Sprite):
     def __init__(self, img, x, y, size = None):
+        super().__init__()
         self.image = Image(img, size)
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -162,4 +170,6 @@ class SimpleText():
         self.image = font.Font('F77 Minecraft.ttf', self.size).render(text, 1, self.color, self.background)
         self.rect = self.image.get_rect()
     def reset(self):
+        self.rect.x = self.position[0]
+        self.rect.y = self.position[1]
         window.blit(self.image, self.position)
