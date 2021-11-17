@@ -10,8 +10,8 @@ mouse.set_visible(False)
 world_x = center_x
 
 locations = [desert, swamp, winter]
-#shuffle(locations)
-scene = locations[0]
+current_track = [desert, choice([swamp, winter])]
+scene = current_track[0]
 n = 0
 
 WIND = False
@@ -188,15 +188,14 @@ while cutscene:
                 cutscene = False
                 car.replace(center_x/2, center_y)
 
-    for i in ground.copy():
-        i.reset()
+    for i in scene_car.sprites():
         if i.x <= -64:
             i.kill()
             
-    if ground.sprites()[-1].x <= world_x + win_w/2:
-        x = ground.sprites()[-1].x
+    if ground.sprites()[-1].x <= win_w:
+        x = ground.sprites()[-1].x+64
         for y in range(win_h//64+1):
-            SimpleSprite(choice(scene), x+64, y*64).add(scene_car, ground)
+            SimpleSprite(choice(scene), x, y*64).add(scene_car, ground)
             
 
     fill_window(black)
@@ -231,8 +230,6 @@ while cutscene:
     if time_passed > 7500:
         text_up.position[1] -= 3
         text_down.position[1] += 3
-    if time_passed > 11550:
-        text_center.reset()
     if time_passed > 8500:
         if car.x < center_x/4:
             car.x += 5
@@ -240,6 +237,8 @@ while cutscene:
             SimpleSprite(black_square_50, car.x, car.y+20).add(scene_car, tires)
         else:
             car.right()
+    if time_passed > 11550:
+        text_center.reset()
     if time_passed > 12500:
         if R1.y > -win_h/4:
             R1.y -= 2
@@ -294,7 +293,7 @@ button_exit.position[1] = center_y + button_exit.rect.height*2
 
 while run:
     if CURRENT_SCENE == 'game':
-        mouse.set_visible(True)
+        mouse.set_visible(False)
         for e in event.get():
             if e.type == QUIT:
                 run = False
@@ -364,7 +363,7 @@ while run:
                 
         for w in walls.sprites():                           # столкновение со стенами
             if w.rect.colliderect(car.hitbox) and ENGINE:
-                if winter_upgrade and scene == winter:
+                if winter_upgrade:
                     w.image = broken_stone_img
                     w.rect.width = 0
                     w.rect.height = 0
@@ -454,7 +453,18 @@ while run:
                 heart_blank.replace(center_x - 75 + 50*x, 0)
                 heart_blank.reset()
         
-    elif CURRENT_SCENE == 'hub':
+        if car.kilometers//10 == way_len:
+            scene = current_track[0] + current_track[1]
+        elif car.kilometers//10 == way_len + 100:
+            scene = current_track[1]
+        elif car.kilometers//10 == way_len*2 + 100:
+            scene = current_track[1] + border
+        elif car.kilometers//10 == way_len*2 + 200:
+            scene = border
+        elif car.kilometers//10 == way_len*2 + 500:
+            CURRENT_SCENE = 'hub'
+        
+    elif CURRENT_SCENE == 'hub':                                # сцена хаба
         mouse.set_visible(True)
         for e in event.get():
             if e.type == QUIT:
@@ -495,7 +505,7 @@ while run:
         fuel_icon.reset()
         button_continue.reset()
 
-    elif CURRENT_SCENE == 'menu':
+    elif CURRENT_SCENE == 'menu':                               # сцена меню
         mouse.set_visible(True)
         for e in event.get():
             if e.type == MOUSEBUTTONDOWN:

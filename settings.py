@@ -12,14 +12,14 @@ gears = 0
 lives = 3
 fuel = 100
 fuel_need = 0.05
+way_len = 1000
 
 wind_rapid = 3 # number from 1 to 100
 wind_speed = 15
-
 rain_rapid = 5
 rain_speed = 7
 
 cutscene = False
 run = True
 MUSIC = False
-CURRENT_SCENE = 'menu'      # game / hub / menu
+CURRENT_SCENE = 'game'      # game / hub / menu
