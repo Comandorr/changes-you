@@ -1,5 +1,6 @@
 from pygame import*
 from random import*
+mixer.init()
 
 # creates a clock that counts frames, fps and time
 clock = time.Clock()
@@ -106,9 +107,9 @@ class Group(sprite.Group):
 # reset = blit image into the game window
 # move = replace sprite to new coordinates
 class SimpleSprite(sprite.Sprite):
-    def __init__(self, img, x, y, size = None):
+    def __init__(self, img, x, y):
         super().__init__()
-        self.image = Image(img, size)
+        self.image = img
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y

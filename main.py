@@ -1,52 +1,21 @@
 from pyengine import*
 from random import*
-mixer.init()
-music = mixer.Channel(1)
-paint_it_black = mixer.Sound('sounds/paint.mp3')
-black_boot = mixer.Sound('sounds/black_boot.mp3')
-broke_down = mixer.Sound('sounds/broke_down.mp3')
+from settings import* 
 
-create_window(1920, 1080)
-#create_window(800, 600)
+create_window(window_width, window_height)
+from resources import*
+
 from pyengine import win_w, win_h, center_x, center_y, window
 mouse.set_visible(False)
 world_x = center_x
-scene_car = Group()
-ground = Group()
-crates = Group()
-tires = Group()
-walls = Group()
-water = Group()
-walls_chance = 3
-gears = 0
-desert = ['images/tiles/sand.png']
-swamp = ['images/tiles/swamp1.png', 'images/tiles/swamp2.png', 'images/tiles/swamp2.png']
-border = ['images/tiles/brick.png']
-winter = ['images/tiles/snow1.png', 'images/tiles/snow2.png']
+
 locations = [desert, swamp, winter]
 #shuffle(locations)
 scene = locations[0]
 n = 0
 
-desert_upgrade = False
-swamp_upgrade = False
-winter_upgrade = False
-
-
-gears = 0
-lives = 3
-fuel = 100
-
-wind = Group()
 WIND = False
-wind_rapid = 2 # number from 1 to 100
-wind_speed = 15
-
-rain = Group()
 RAIN = False
-rain_rapid = 2
-rain_speed = 7
-
 ENGINE = True
 
 if scene == swamp:
@@ -56,8 +25,8 @@ elif scene == winter or scene == desert:
 
 
 class SmokeParticle(SimpleSprite):
-    def __init__(self, x, y, img = 'images/tile_0008.png'):
-        super().__init__(img, x, y, size=(16, 16))
+    def __init__(self, x, y):
+        super().__init__(smoke_img, x, y)
         self.add(wind, scene_car)
 
     def update(self):
@@ -71,12 +40,11 @@ class SmokeParticle(SimpleSprite):
             
             
 class WindDust(SimpleSprite):
-    def __init__(self, x, y, size = (8, 4)):
+    def __init__(self, x, y):
         if scene == winter:
-            img = 'images/snowdrop.png'
+            super().__init__(snowdrop_img, x, y)
         else:
-            img = 'images/wind_sand.png'
-        super().__init__(img, x, y, size)
+            super().__init__(wind_sand_img, x, y)
         self.add(wind, scene_car)
 
     def update(self):
@@ -87,9 +55,8 @@ class WindDust(SimpleSprite):
 
 
 class RainDrop(SimpleSprite):
-    def __init__(self, x, y, size = (8, 16)):
-        img = 'images/raindrop.png'
-        super().__init__(img, x, y, size)
+    def __init__(self, x, y):
+        super().__init__(raindrop_img, x, y)
         self.destination = randint(int(win_h/2), win_h)
         self.add(rain, scene_car)
 
@@ -102,11 +69,11 @@ class RainDrop(SimpleSprite):
 
 
 class Car(SimpleSprite):
-    def __init__(self, img, x, y, speed = 1, size = None):
-        super().__init__(img, x, y, size)
+    def __init__(self, img, x, y, speed = 1):
+        super().__init__(img, x, y)
         self.speed = speed
         self.orig_speed = speed
-        self.original = image.load(img).convert_alpha()
+        self.original = img
         self.frame = 0
         self.fps = 0
         self.aniframe = 10
@@ -141,8 +108,8 @@ class Car(SimpleSprite):
             i.x -= self.speed
         world_x += self.speed
         self.aniframe = 5
-        SimpleSprite('images/black_square_50.png', self.x, self.y+14).add(scene_car, tires)
-        SimpleSprite('images/black_square_50.png', self.x, self.y+20).add(scene_car, tires)
+        SimpleSprite(black_square_50, self.x, self.y+14).add(scene_car, tires)
+        SimpleSprite(black_square_50, self.x, self.y+20).add(scene_car, tires)
         self.kilometers += self.speed
         if chance(10):
             SmokeParticle(self.x - 16, self.rect.bottom - 16)
@@ -164,24 +131,24 @@ class Car(SimpleSprite):
 
 def upgrade():
     if desert_upgrade and winter_upgrade and swamp_upgrade:
-        car.image = image.load('images/car/ultimate.png').convert_alpha()
+        car.image = car_ultimate_img
     elif desert_upgrade and swamp_upgrade:
-        car.image = image.load('images/car/desert-swamp.png').convert_alpha()
+        car.image = car_desert_swamp_img
     elif desert_upgrade and winter_upgrade:
-        car.image = image.load('images/car/desert-winter.png').convert_alpha()
+        car.image = car_desert_winter_img
     elif winter_upgrade and swamp_upgrade:
-        car.image = image.load('images/car/swamp-winter.png').convert_alpha()
+        car.image = car_swamp_winter_img
     elif desert_upgrade:
-        car.image = image.load('images/car/desert.png').convert_alpha()
+        car.image = car_desert_img
     elif swamp_upgrade:
-        car.image = image.load('images/car/swamp.png').convert_alpha()
+        car.image = car_swamp_img
     elif winter_upgrade:
-        car.image = image.load('images/car/winter.png').convert_alpha()
+        car.image = car_winter_img
     car.original = car.image
     
 
-car = Car('images/car/car.png', center_x/2, center_y, size=(72, 24), speed = 7)
-shadow = SimpleSprite('images/shadow.png', car.x, car.y, size = (72, 24))
+car = Car(Image('images/car/car.png', size=(72, 24)), center_x/2, center_y, speed = 7)
+shadow = SimpleSprite(Image('images/shadow.png', size = (72, 24)), car.x, car.y)
 for x in range(win_w//64+1):
     for y in range(win_h//64+1):
         SimpleSprite(choice(scene), x*64, y*64).add(scene_car, ground)
@@ -189,9 +156,12 @@ for x in range(win_w//64+1):
 cutscene = True
 run = True
 car.x = -84
-R0 = SimpleSprite('images/black_square.png', 0, 0, (win_w, win_h))
-R1 = SimpleSprite('images/black_square.png', 0, 0, (win_w, win_h/5))
-R2 = SimpleSprite('images/black_square.png', 0, win_h*0.8, (win_w, win_h/5))
+R0 = SimpleSprite(
+    transform.scale(black_square, (win_w, win_h)) , 0, 0)
+R1 = SimpleSprite(
+    transform.scale(black_square, (win_w, win_h/5)), 0, 0)
+R2 = SimpleSprite(
+    transform.scale(black_square, (win_w, win_h/5)), 0, win_h*0.8)
 text_up = SimpleText('год 2052', 64, win_w/2, win_h*0.1, color = white)
 text_up.position[0] = win_w/2 - text_up.rect.width/2
 text_down = SimpleText('ты последний выживший', 64, win_w/2, win_h*0.9, color = white)
@@ -199,9 +169,10 @@ text_down.position[0] = win_w/2 - text_down.rect.width/2
 text_center = SimpleText('CHANGES', 100, win_w/2, win_h/2)
 text_center.position[0] = win_w/2 - text_down.rect.width/1.7
 text_center.position[1] = win_h/2 - text_down.rect.height/2
-music.play(paint_it_black)                                     # включение музыки
-music.queue(black_boot)
-music.queue(broke_down)
+if MUSIC:
+    music.play(paint_it_black)                                     # включение музыки
+    music.queue(black_boot)
+    music.queue(broke_down)
 start_time = time.get_ticks()
 while cutscene:
     time_passed = time.get_ticks() - start_time
@@ -262,8 +233,8 @@ while cutscene:
     if time_passed > 8500:
         if car.x < center_x/4:
             car.x += 5
-            SimpleSprite('images/black_square_50.png', car.x, car.y+14).add(scene_car, tires)
-            SimpleSprite('images/black_square_50.png', car.x, car.y+20).add(scene_car, tires)
+            SimpleSprite(black_square_50, car.x, car.y+14).add(scene_car, tires)
+            SimpleSprite(black_square_50, car.x, car.y+20).add(scene_car, tires)
         else:
             car.right()
     if time_passed > 12500:
@@ -283,14 +254,23 @@ while cutscene:
     clock.tick(60)
 
 
-button_restart = SimpleText(' продолжить ', 48, center_x, center_y, color=white, background=black)
+button_restart = SimpleText(
+    ' продолжить ', 48, center_x, center_y, color=white, background=black)
 button_restart.position[0] = center_x - button_restart.rect.width/2
 button_restart.position[1] = center_y - button_restart.rect.height/2
-kilometers_text = SimpleText('км', 24, win_w-100, 0, background=gray)
-location_text = SimpleText('Пустыня', 24, win_w-150, kilometers_text.rect.height, background=gray)
-fuel_icon = SimpleSprite('images/fuel.png', win_w/3.2, win_h - 75)
-fuel_bar = SimpleSprite('images/black_square.png', win_w/3, win_h - 50, size = (win_w/2, 20))
-fuel_bar_shadow = SimpleSprite('images/black_square_50.png', win_w/3, win_h - 55, size = (win_w/3+5, 30))
+kilometers_text = SimpleText(
+    'км', 24, win_w-100, 0, background=gray)
+location_text = SimpleText(
+    'Пустыня', 24, win_w-150, kilometers_text.rect.height, background=gray)
+fuel_icon = SimpleSprite(
+    Image('images/fuel.png'), 
+    win_w/3.2, win_h - 75)
+fuel_bar = SimpleSprite(
+    Image('images/black_square.png', size = (win_w/2, 20)), 
+    win_w/3, win_h - 50)
+fuel_bar_shadow = SimpleSprite(
+    Image('images/black_square_50.png', size = (win_w/3+5, 30)), 
+    win_w/3, win_h - 55)
 
 while run:
     for e in event.get():
@@ -331,17 +311,17 @@ while run:
         for y in range(win_h//64+1):
             SimpleSprite(choice(scene), x, y*64).add(scene_car, ground)
             if chance(1) and scene != border:
-                SimpleSprite('images/crate_24.png', x, y*64).add(scene_car, crates)
+                SimpleSprite(crate_img, x, y*64).add(scene_car, crates)
             elif chance(walls_chance) and scene == desert:
-                SimpleSprite('images/block_02.png', x, y*64).add(scene_car, walls)
+                SimpleSprite(wall_img, x, y*64).add(scene_car, walls)
             elif chance(20) and scene == swamp:
-                SimpleSprite('images/tiles/water.png', x, y*64).add(scene_car, water)
+                SimpleSprite(water_img, x, y*64).add(scene_car, water)
             elif chance(5) and scene == winter:
-                SimpleSprite('images/stone.png', x, y*64).add(scene_car, walls)
+                SimpleSprite(stone_img, x, y*64).add(scene_car, walls)
     
     for c in crates.sprites():                          # столкновение с ящиками
         if c.rect.colliderect(car.hitbox) and ENGINE:
-            c.image = image.load('images/crate_32.png').convert_alpha()
+            c.image = broken_crate_img
             c.rect.width = 0
             c.rect.height = 0
             gears += 1
@@ -361,7 +341,7 @@ while run:
     for w in walls.sprites():                           # столкновение со стенами
         if w.rect.colliderect(car.hitbox) and ENGINE:
             if winter_upgrade and scene == winter:
-                w.image = image.load('images/stone_dead.png').convert_alpha()
+                w.image = broken_stone_img
                 w.rect.width = 0
                 w.rect.height = 0
             else:    
@@ -429,23 +409,28 @@ while run:
     fuel_bar_shadow.reset()
     fuel_bar.reset()
     if ENGINE:
-        fuel -= 0.1
+        fuel -= 0.05
         #pass
     if fuel <= 1 and ENGINE:
         ENGINE = False
         time_dead = time.get_ticks()
 
+
+    # тут переработать 
+    # отрисовку гиров 
+    # и сердец
+
+
     for x in range(10):                                     # интерфейс
-        SimpleSprite('images/gear_blank.png', center_x + win_w/6 + 50*x, 0).reset()
+        SimpleSprite(gear_blank_img, center_x + win_w/6 + 50*x, 0).reset()
     for x in range(gears):
-        SimpleSprite('images/gear.png', center_x + win_w/6 + 50*x, 0).reset()
+        SimpleSprite(gear_img, center_x + win_w/6 + 50*x, 0).reset()
 
     for x in range(3):
-        SimpleSprite('images/heart_blank.png', center_x - 75 + 50*x, 0, size = (50, 50)).reset()
+        SimpleSprite(heart_blank_img, center_x - 75 + 50*x, 0).reset()
     for x in range(lives):
-        SimpleSprite('images/heart.png', center_x -75 + 50*x, 0, size = (50, 50)).reset()
+        SimpleSprite(heart_img, center_x -75 + 50*x, 0).reset()
         
-
     
 
 
