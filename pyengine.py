@@ -14,6 +14,7 @@ red = (255, 0, 0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
 gray = (200, 200, 200)
+dark_gray = (150, 150, 150)
 joystick.init()
 pads = joystick.get_count()
 if pads:
@@ -22,7 +23,6 @@ if pads:
     gamepad_connected = True
 else:
     gamepad_connected = False
-
 
 
 # return chance (percentage)
