@@ -172,8 +172,8 @@ if cutscene:
     text_down = SimpleText('ты последний выживший', 64, win_w/2, win_h*0.9, color = white)
     text_down.position[0] = win_w/2 - text_down.rect.width/2
     text_center = SimpleText('CHANGES', 100, win_w/2, win_h/2)
-    text_center.position[0] = win_w/2 - text_down.rect.width/1.7
-    text_center.position[1] = win_h/2 - text_down.rect.height/2
+    text_center.position[0] = center_x - text_down.rect.width/1.7
+    text_center.position[1] = center_y - text_down.rect.height/2
 
 
 button_restart = SimpleText(
@@ -194,7 +194,6 @@ fuel_bar_shadow = SimpleSprite(
     Image('images/other/black_square_50.png', size = (win_w/3+5, 30)), 
     win_w/3, win_h - 55)
 gear = SimpleSprite(gear_img, center_x + win_w/6, 0)
-gear_blank = SimpleSprite(gear_blank_img, center_x + win_w/6, 0)
 heart = SimpleSprite(heart_img, center_x -75, 0)
 heart_blank = SimpleSprite(heart_blank_img, center_x - 75, 0)
 gears_text = SimpleText(str(gears), 36, win_w, 35)
@@ -226,7 +225,7 @@ menu_fuel  = SimpleSprite(menu_fuel_img,  button_up_3.x, menu_heart.y)
 
 
 if MUSIC:                                                   # включение музыки
-    music.play(paint_it_black, 10)
+    music.play(paint_it_black, 100)
 start_time = time.get_ticks()
 
 while cutscene:
@@ -305,8 +304,6 @@ while cutscene:
     if time_passed > 16000:
         cutscene = False
 
-    fps_text = SimpleText(str(int(clock.get_fps())), 36, 0, 0, background=white)
-    fps_text.reset()
     display.update()
     clock.tick(60)
 
@@ -336,7 +333,7 @@ while run:
                         else:
                             run = False
 
-        fill_window(black)
+        fill_window(gray)
         for i in scene_car.sprites():
             if i.x <= -64:
                 i.kill()
@@ -354,10 +351,10 @@ while run:
             x = ground.sprites()[-1].x+64
             for y in range(win_h//64+1):
                 SimpleSprite(choice(scene), x, y*64).add(scene_car, ground)
-                if chance(1) and scene != border:               # ящики
+                if chance(1) and scene != border and scene != finish:               # ящики
                     SimpleSprite(crate_img, x, y*64).add(scene_car, crates)
 
-                elif chance(1) and scene != border:             # бочки
+                elif chance(1) and scene != border and scene != finish:             # бочки
                     SimpleSprite(fuel_img, x, y*64).add(scene_car, barrels)
 
                 elif chance(walls_chance) and scene in [desert, winter]:  # стены
@@ -499,30 +496,43 @@ while run:
                     WIND, RAIN = True, False
                 elif current_track[0] == swamp:
                     WIND, RAIN =  False, True
+                    
             elif car.kilometers//10 == 100:
                 scene = current_track[0]
                 if scene == winter or scene == desert:
                     WIND, RAIN = True, False
                 elif scene == swamp:
                     WIND, RAIN = False, True
+
             elif car.kilometers//10 == way_len + 100:
                 scene = current_track[0] + current_track[1]
                 if current_track[1]== winter or current_track[1] == desert:
                     WIND, RAIN = True, False
                 elif current_track[1] == swamp:
                     WIND, RAIN = False, True
+
             elif car.kilometers//10 == way_len + 300:
                 scene = current_track[1]
                 if scene == winter or scene == desert:
                     WIND, RAIN = True, False
                 elif scene == swamp:
                     WIND, RAIN = False, True
+
             elif car.kilometers//10 == way_len*2 + 300:
                 scene = current_track[1] + border
                 WIND = RAIN = False
+
             elif car.kilometers//10 == way_len*2 + 500:
-                CURRENT_SCENE = 'hub'
-                first_entry = True
+                scene = border
+
+            elif car.kilometers//10 == way_len*2 + 700:
+                if desert_upgrade and winter_upgrade and swamp_upgrade:
+                    scene = finish
+                else:
+                    CURRENT_SCENE = 'hub'
+                    first_entry = True
+            elif car.kilometers//10 == way_len*2 + 800:
+                run = False
      
     elif CURRENT_SCENE == 'hub':                                # сцена хаба
         if first_entry:
@@ -532,7 +542,7 @@ while run:
             gears_text.position[0] = fuel_icon.x - gears_text.rect.width - 65
             gears_text.position[1] = 35
             button_continue.position[0] = win_w - 100 - button_continue.rect.width
-            button_continue.position[1] = win_h - 50
+            button_continue.position[1] = win_h - 100
             button_exit.position[1] = button_continue.position[1]
             button_exit.position[0] = 100
             first_entry = False
@@ -695,7 +705,64 @@ while run:
         button_continue.reset()
         button_exit.reset()
 
-    fps_text = SimpleText(str(int(clock.get_fps())), 36, 0, 0, background=white)
-    fps_text.reset()
+    display.update()
+    clock.tick(60)
+
+if scene == finish:
+    cutscene = True
+    start_time = time.get_ticks()
+    text_center = SimpleText(' to be continued... ', 64 , 0, 0, background=gray)
+    text_center.position[0] = center_x - text_center.rect.width/2
+    text_center.position[1] = center_y - text_center.rect.height/2
+    R1.y = -win_h/4
+    R2.y = win_h
+    R2.image = transform.scale(R2.image, (win_w, win_h/2))
+    
+    R0.image.set_alpha(0)
+    
+
+while cutscene:
+    time_passed = time.get_ticks() - start_time
+    for e in event.get():
+        if e.type == QUIT:
+            cutscene = False
+            run = False
+        if e.type == KEYDOWN:
+            if e.key == K_ESCAPE or e.key == K_SPACE:
+                cutscene = False
+
+    if car.x < win_w + 200:
+        car.x += 5
+        SimpleSprite(black_square_50, car.x, car.y+14).add(tires)
+        SimpleSprite(black_square_50, car.x, car.y+20).add(tires)
+
+    fill_window(gray)
+    ground.reset()
+    tires.reset()
+    car.animate()
+    shadow.replace(car.x-3, car.y+10)
+    shadow.reset()
+    car.reset()
+
+    if R1.y < 0 and time_passed > 2:
+        R1.y += 2
+        R2.y -= 2
+
+    if R1.y == 0:
+        text_center.reset()
+
+    R1.reset()
+    R2.reset()
+
+    if time_passed > 5500 and R0.image.get_alpha() < 255:
+        R0.image.set_alpha(R0.image.get_alpha() + 1)
+    R0.reset()
+
+    if time_passed > 12000:
+        text_center = SimpleText('конец', 64 , 0, 0, color=white)
+        text_center.position[0] = center_x - text_center.rect.width/2
+        text_center.position[1] = center_y - text_center.rect.height/2
+        text_center.reset()
+    
     display.update()
     clock.tick(60)

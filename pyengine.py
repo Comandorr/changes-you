@@ -37,7 +37,7 @@ def create_window(w, h):
     win_h = h
     center_x = w/2
     center_y = h/2
-    window = display.set_mode((w, h), DOUBLEBUF, vsync = True)
+    window = display.set_mode((w, h), FULLSCREEN, OPENGL, vsync = 1)
     return window
 
 

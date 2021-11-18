@@ -11,9 +11,9 @@ winter_upgrade = False
 gears = 0
 lives = 3
 fuel = 100
-fuel_need = 0.05
+fuel_need = 0.06
 fuel_max = 100
-way_len = 500
+way_len = 750 #750
 
 wind_rapid = 3 # number from 1 to 100
 wind_speed = 15

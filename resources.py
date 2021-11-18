@@ -8,6 +8,7 @@ desert = [Image('images/tiles/sand.png')]
 swamp = [Image('images/tiles/swamp1.png'), Image('images/tiles/swamp2.png'), Image('images/tiles/swamp2.png')]
 border = [Image('images/tiles/brick.png')]
 winter = [Image('images/tiles/snow1.png'), Image('images/tiles/snow2.png')]
+finish = [Image('images/crate_11.png')]
 
 crate_img = Image('images/tiles/crate_24.png')          # тайлы и ресурсы
 fuel_img = Image('images/tiles/fuel.png')
@@ -16,8 +17,7 @@ wall_img = Image('images/tiles/block_02.png')
 water_img = Image('images/tiles/water.png')
 broken_crate_img = Image('images/tiles/crate_32.png')
 
-gear_img = Image('images/UI/gear.png')                  # картинки ui                  # картинки ui
-gear_blank_img = Image('images/UI/gear_blank.png')
+gear_img = Image('images/UI/gear.png')                  # картинки ui
 heart_img = Image('images/UI/heart.png', size = (50, 50))
 heart_blank_img = Image('images/UI/heart_blank.png', size = (50, 50))
 menu_heart_img = Image('images/UI/heart.png', size=(108, 108))
