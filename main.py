@@ -322,6 +322,15 @@ while run:
                     RAIN = not RAIN
                 if e.key == K_ESCAPE:
                     CURRENT_SCENE = 'menu'
+                if e.key == K_SPACE:
+                    if mouse.get_visible():
+                        if lives > 0 and fuel > 1:
+                            sprite.spritecollide(car, walls, True)
+                            ENGINE = True
+                            mouse.set_visible(False)
+                            music.set_volume(1)
+                        else:
+                            run = False
             if e.type == MOUSEBUTTONDOWN:
                 if not ENGINE:
                     if button_restart.rect.collidepoint(mouse.get_pos()):
