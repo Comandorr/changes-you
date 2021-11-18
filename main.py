@@ -1,11 +1,10 @@
 from pyengine import*
 from random import*
 from settings import* 
-
 create_window(window_width, window_height)
+from pyengine import win_w, win_h, center_x, center_y, window
 from resources import*
 
-from pyengine import win_w, win_h, center_x, center_y, window
 mouse.set_visible(False)
 world_x = center_x
 
@@ -175,10 +174,59 @@ if cutscene:
     text_center = SimpleText('CHANGES', 100, win_w/2, win_h/2)
     text_center.position[0] = win_w/2 - text_down.rect.width/1.7
     text_center.position[1] = win_h/2 - text_down.rect.height/2
+
+
+button_restart = SimpleText(
+    ' продолжить ', 48, center_x, center_y, color=white, background=black)
+button_restart.position[0] = center_x - button_restart.rect.width/2
+button_restart.position[1] = center_y - button_restart.rect.height/2
+kilometers_text = SimpleText(
+    'км', 24, win_w-100, 0, background=gray)
+location_text = SimpleText(
+    'Пустыня', 24, win_w-150, kilometers_text.rect.height, background=gray)
+fuel_icon = SimpleSprite(
+    Image('images/UI/fuel.png'), 
+    win_w/3.2, win_h - 75)
+fuel_bar = SimpleSprite(
+    Image('images/other/black_square.png', size = (win_w/2, 20)), 
+    win_w/3, win_h - 50)
+fuel_bar_shadow = SimpleSprite(
+    Image('images/other/black_square_50.png', size = (win_w/3+5, 30)), 
+    win_w/3, win_h - 55)
+gear = SimpleSprite(gear_img, center_x + win_w/6, 0)
+gear_blank = SimpleSprite(gear_blank_img, center_x + win_w/6, 0)
+heart = SimpleSprite(heart_img, center_x -75, 0)
+heart_blank = SimpleSprite(heart_blank_img, center_x - 75, 0)
+gears_text = SimpleText(str(gears), 36, win_w, 35)
+gears_game_text = SimpleText(str(gears), 30,  win_w - 300, 10, background=gray)
+fuel_text = SimpleText(str(fuel) + '/100', 36, win_w, 35)
+fuel_text.position[0] = win_w - fuel_text.rect.width
+menu_wall = SimpleSprite(menu_briks_img, 0, 0)
+menu_floor = SimpleSprite(menu_ground_img, 0, 0)
+button_continue = SimpleText(' продолжить путь -> ', 48, win_w, win_h - 100, background=gray)
+button_continue.position[0] = win_w - 100 - button_continue.rect.width
+button_exit = SimpleText(' выход ', 48, center_x, win_h/3*2, background=gray)
+button_exit.position[0] = center_x - button_exit.rect.width/2
+button_exit.position[1] = center_y + button_exit.rect.height*2
+button_up_1 = SimpleSprite(upgrade_1_img, center_x + win_w/8, win_h/5)
+button_up_2 = SimpleSprite(upgrade_2_img, center_x + 2*win_w/8, win_h/5)
+button_up_3 = SimpleSprite(upgrade_3_img, center_x + 3*win_w/8, win_h/5)
+hub_text_back = SimpleSprite(transform.scale(black_square, (win_w/3, win_h/3)), center_x + win_w/9, win_h/3)
+hub_text_back.image.set_alpha(150)
+hub_text_1 = SimpleText('привал', 36, center_x + win_w/8, win_h/2.5-15, color=white)
+hub_text_2 = SimpleText('выберите один из апгрейдов', 24, center_x + win_w/8, win_h/2.5+50, color=white)
+hub_text_3 = SimpleText('улучшение будет стоить 10 деталей', 24, center_x + win_w/8, win_h/2.5+100, color=white)
+hub_text_4 = SimpleText('после этого - продолжите свой путь', 24, center_x + win_w/8, win_h/2.5+150, color=white)
+button_back = SimpleSprite(button_img, 0, 0)
+button_accept = SimpleText(' >улучшить< ', 36, -200, -200, background=gray)
+button_rect = SimpleSprite(button_rect_img, -200, -200)
+menu_heart = SimpleSprite(menu_heart_img, button_up_1.x, hub_text_back.rect.bottom + 25)
+menu_gear  = SimpleSprite(menu_gear_img,  button_up_2.x, menu_heart.y)
+menu_fuel  = SimpleSprite(menu_fuel_img,  button_up_3.x, menu_heart.y)
+
+
 if MUSIC:                                                   # включение музыки
-    music.play(paint_it_black)
-    music.queue(black_boot)
-    music.queue(broke_down)
+    music.play(paint_it_black, 10)
 start_time = time.get_ticks()
 
 while cutscene:
@@ -254,7 +302,7 @@ while cutscene:
                 car.x += 5
             else:
                 car.right()
-    if time_passed > 18000:
+    if time_passed > 16000:
         cutscene = False
 
     fps_text = SimpleText(str(int(clock.get_fps())), 36, 0, 0, background=white)
@@ -262,54 +310,6 @@ while cutscene:
     display.update()
     clock.tick(60)
 
-
-button_restart = SimpleText(
-    ' продолжить ', 48, center_x, center_y, color=white, background=black)
-button_restart.position[0] = center_x - button_restart.rect.width/2
-button_restart.position[1] = center_y - button_restart.rect.height/2
-kilometers_text = SimpleText(
-    'км', 24, win_w-100, 0, background=gray)
-location_text = SimpleText(
-    'Пустыня', 24, win_w-150, kilometers_text.rect.height, background=gray)
-fuel_icon = SimpleSprite(
-    Image('images/UI/fuel.png'), 
-    win_w/3.2, win_h - 75)
-fuel_bar = SimpleSprite(
-    Image('images/other/black_square.png', size = (win_w/2, 20)), 
-    win_w/3, win_h - 50)
-fuel_bar_shadow = SimpleSprite(
-    Image('images/other/black_square_50.png', size = (win_w/3+5, 30)), 
-    win_w/3, win_h - 55)
-gear = SimpleSprite(gear_img, center_x + win_w/6, 0)
-gear_blank = SimpleSprite(gear_blank_img, center_x + win_w/6, 0)
-heart = SimpleSprite(heart_img, center_x -75, 0)
-heart_blank = SimpleSprite(heart_blank_img, center_x - 75, 0)
-gears_text = SimpleText(str(gears), 36, win_w, 35)
-gears_game_text = SimpleText(str(gears), 30,  win_w - 300, 10, background=gray)
-fuel_text = SimpleText(str(fuel) + '/100', 36, win_w, 35)
-fuel_text.position[0] = win_w - fuel_text.rect.width
-menu_wall = SimpleSprite(menu_briks_img, 0, 0)
-menu_floor = SimpleSprite(menu_ground_img, 0, 0)
-button_continue = SimpleText(' продолжить путь -> ', 48, win_w, win_h - 100, background=gray)
-button_continue.position[0] = win_w - 100 - button_continue.rect.width
-button_exit = SimpleText(' выход ', 48, center_x, win_h/3*2, background=gray)
-button_exit.position[0] = center_x - button_exit.rect.width/2
-button_exit.position[1] = center_y + button_exit.rect.height*2
-button_up_1 = SimpleSprite(upgrade_1_img, center_x + win_w/8, win_h/5)
-button_up_2 = SimpleSprite(upgrade_2_img, center_x + 2*win_w/8, win_h/5)
-button_up_3 = SimpleSprite(upgrade_3_img, center_x + 3*win_w/8, win_h/5)
-hub_text_back = SimpleSprite(transform.scale(black_square, (win_w/3, win_h/3)), center_x + win_w/9, win_h/3)
-hub_text_back.image.set_alpha(150)
-hub_text_1 = SimpleText('привал', 36, center_x + win_w/8, win_h/2.5-15, color=white)
-hub_text_2 = SimpleText('выберите один из апгрейдов', 24, center_x + win_w/8, win_h/2.5+50, color=white)
-hub_text_3 = SimpleText('улучшение будет стоить 10 деталей', 24, center_x + win_w/8, win_h/2.5+100, color=white)
-hub_text_4 = SimpleText('после этого - продолжите свой путь', 24, center_x + win_w/8, win_h/2.5+150, color=white)
-button_back = SimpleSprite(button_img, 0, 0)
-button_accept = SimpleText(' >улучшить< ', 36, -200, -200, background=gray)
-button_rect = SimpleSprite(button_rect_img, -200, -200)
-menu_heart = SimpleSprite(menu_heart_img, button_up_1.x, hub_text_back.rect.bottom + 25)
-menu_gear  = SimpleSprite(menu_gear_img,  button_up_2.x, menu_heart.y)
-menu_fuel  = SimpleSprite(menu_fuel_img,  button_up_3.x, menu_heart.y)
 
 while run:
     if CURRENT_SCENE == 'game':
@@ -332,6 +332,7 @@ while run:
                             sprite.spritecollide(car, walls, True)
                             ENGINE = True
                             mouse.set_visible(False)
+                            music.set_volume(1)
                         else:
                             run = False
 
@@ -389,6 +390,7 @@ while run:
                     ENGINE = False
                     time_dead = time.get_ticks()
                     lives -= 1
+                    music.set_volume(0.5)
 
         for w in water.sprites():                           # торможение об воду в болоте
             if w.rect.colliderect(car.hitbox) and ENGINE:
@@ -530,9 +532,11 @@ while run:
             gears_text.position[0] = fuel_icon.x - gears_text.rect.width - 65
             gears_text.position[1] = 35
             button_continue.position[0] = win_w - 100 - button_continue.rect.width
+            button_continue.position[1] = win_h - 50
             button_exit.position[1] = button_continue.position[1]
             button_exit.position[0] = 100
             first_entry = False
+            music.set_volume(0.5)
 
         for e in event.get():
             if e.type == QUIT:
@@ -547,7 +551,8 @@ while run:
                     walls_chance += 1
                     button_accept.position = [-200, -200]
                     button_rect.replace(-200, -200)
-                    first_entry = False              
+                    first_entry = False     
+                    music.set_volume(1)      
 
                 elif button_exit.rect.collidepoint(mouse.get_pos()):            # выход
                     run = False
@@ -669,16 +674,19 @@ while run:
             i.reset()
 
     elif CURRENT_SCENE == 'menu':                               # сцена меню
+        music.set_volume(0.5)
         mouse.set_visible(True)
         for e in event.get():
             if e.type == MOUSEBUTTONDOWN:
                 if button_continue.rect.collidepoint(mouse.get_pos()):
                     CURRENT_SCENE = 'game'
+                    music.set_volume(1)
                 elif button_exit.rect.collidepoint(mouse.get_pos()):
                     run = False
             elif e.type == KEYDOWN:
                 if e.key == K_ESCAPE:
                     CURRENT_SCENE = 'game'
+                    music.set_volume(1)
 
         button_exit.position[0] = center_x - button_exit.rect.width/2
         button_exit.position[1] = center_y + button_exit.rect.height*2

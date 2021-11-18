@@ -1,5 +1,9 @@
 from pyengine import*
 
+load_text = SimpleText('ЗАГРУЗКА', 36, center_x-100, center_y-50, color=white)
+load_text.reset()
+display.update()
+
 desert = [Image('images/tiles/sand.png')]
 swamp = [Image('images/tiles/swamp1.png'), Image('images/tiles/swamp2.png'), Image('images/tiles/swamp2.png')]
 border = [Image('images/tiles/brick.png')]
@@ -10,7 +14,6 @@ fuel_img = Image('images/tiles/fuel.png')
 fuel_broken_img = Image('images/tiles/crate_36.png')
 wall_img = Image('images/tiles/block_02.png')
 water_img = Image('images/tiles/water.png')
-stone_img = Image('images/tiles/stone.png')
 broken_crate_img = Image('images/tiles/crate_32.png')
 
 gear_img = Image('images/UI/gear.png')                  # картинки ui                  # картинки ui
@@ -45,11 +48,10 @@ upgrade_3_img = Image('images/UI/winter.png', size=(108, 72))
 button_img = Image('images/UI/crate_09.png', size=(136, 136))
 button_rect_img = Image('images/UI/environment_06.png', size=(136, 136))
 
+
 music = mixer.Channel(1)
 paint_it_black = mixer.Sound('sounds/paint.mp3')
 #paint_it_black = mixer.Sound('sounds/naruto.mp3')
-black_boot = mixer.Sound('sounds/black_boot.mp3')
-broke_down = mixer.Sound('sounds/broke_down.mp3')
 
 scene_car = Group()
 ground = Group()

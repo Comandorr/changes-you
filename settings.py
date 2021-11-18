@@ -20,7 +20,7 @@ wind_speed = 15
 rain_rapid = 5
 rain_speed = 7
 
-cutscene = False
+cutscene = True
 run = True                  # False / True
-MUSIC = False
+MUSIC = True
 CURRENT_SCENE = 'game'      # game / hub / menu
