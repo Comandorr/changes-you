@@ -11,7 +11,7 @@ winter_upgrade = False
 gears = 0
 lives = 3
 fuel = 100
-fuel_need = 0.06
+fuel_need = 0.065
 fuel_max = 100
 way_len = 750 #750
 
