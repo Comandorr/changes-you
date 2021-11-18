@@ -131,7 +131,7 @@ class Car(SimpleSprite):
 
 def upgrade():
     global fuel_need
-    fuel_need += 0.01
+    fuel_need += 0.005
     if desert_upgrade and winter_upgrade and swamp_upgrade:
         car.image = car_ultimate_img
     elif desert_upgrade and swamp_upgrade:
