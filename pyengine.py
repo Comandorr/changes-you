@@ -160,8 +160,9 @@ class Player(SimpleSprite):
 
 # class for text sprites with font size, coordinates, color and background
 # setText - sets text, reset - resets
-class SimpleText():
+class SimpleText(sprite.Sprite):
     def __init__(self, text, size, x, y, color = black, background = None):
+        super().__init__()
         self.image = font.Font('F77 Minecraft.ttf', size).render(text, 1, color, background)
         self.position = [x, y]
         self.size = size

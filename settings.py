@@ -1,5 +1,5 @@
-window_width = 1920; window_height = 1080
-#window_width = 800; window_height = 600
+window_width, window_height = 1920, 1080
+#window_width, window_height = 800, 600
 
 walls_chance = 3
 gears = 0
@@ -12,7 +12,8 @@ gears = 0
 lives = 3
 fuel = 100
 fuel_need = 0.05
-way_len = 1000
+fuel_max = 100
+way_len = 500
 
 wind_rapid = 3 # number from 1 to 100
 wind_speed = 15
@@ -20,6 +21,6 @@ rain_rapid = 5
 rain_speed = 7
 
 cutscene = False
-run = True
+run = True                  # False / True
 MUSIC = False
 CURRENT_SCENE = 'game'      # game / hub / menu

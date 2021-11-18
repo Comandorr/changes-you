@@ -13,6 +13,7 @@ locations = [desert, swamp, winter]
 current_track = [desert, choice([swamp, winter])]
 scene = current_track[0]
 n = 0
+first_entry = True
 
 WIND = False
 RAIN = False
@@ -41,7 +42,7 @@ class SmokeParticle(SimpleSprite):
             
 class WindDust(SimpleSprite):
     def __init__(self, x, y):
-        if scene == winter:
+        if scene in [winter, winter+swamp, swamp+winter, winter+border, border+winter] :
             super().__init__(snowdrop_img, x, y)
         else:
             super().__init__(wind_sand_img, x, y)
@@ -121,15 +122,17 @@ class Car(SimpleSprite):
         self.aniframe = 10
         if ENGINE:
             keys = key.get_pressed()
-            if keys[K_w]:
+            if keys[K_w] or keys[K_UP]:
                 self.up()
-            if keys[K_s]:
+            if keys[K_s] or keys[K_DOWN]:
                 self.down()    
             self.right()
         self.animate()
         
 
 def upgrade():
+    global fuel_need
+    fuel_need += 0.01
     if desert_upgrade and winter_upgrade and swamp_upgrade:
         car.image = car_ultimate_img
     elif desert_upgrade and swamp_upgrade:
@@ -145,6 +148,7 @@ def upgrade():
     elif winter_upgrade:
         car.image = car_winter_img
     car.original = car.image
+    car_menu.image = transform.scale(car.image, (360, 120))
     
 
 car = Car(Image('images/car/car.png', size=(72, 24)), center_x/2, center_y, speed = 7)
@@ -237,7 +241,7 @@ while cutscene:
             SimpleSprite(black_square_50, car.x, car.y+20).add(scene_car, tires)
         else:
             car.right()
-    if time_passed > 11550:
+    if time_passed > 11550: #9400
         text_center.reset()
     if time_passed > 12500:
         if R1.y > -win_h/4:
@@ -281,7 +285,9 @@ gear_blank = SimpleSprite(gear_blank_img, center_x + win_w/6, 0)
 heart = SimpleSprite(heart_img, center_x -75, 0)
 heart_blank = SimpleSprite(heart_blank_img, center_x - 75, 0)
 gears_text = SimpleText(str(gears), 36, win_w, 35)
+gears_game_text = SimpleText(str(gears), 30,  win_w - 300, 10, background=gray)
 fuel_text = SimpleText(str(fuel) + '/100', 36, win_w, 35)
+fuel_text.position[0] = win_w - fuel_text.rect.width
 menu_wall = SimpleSprite(menu_briks_img, 0, 0)
 menu_floor = SimpleSprite(menu_ground_img, 0, 0)
 button_continue = SimpleText(' продолжить путь -> ', 48, win_w, win_h - 100, background=gray)
@@ -289,11 +295,26 @@ button_continue.position[0] = win_w - 100 - button_continue.rect.width
 button_exit = SimpleText(' выход ', 48, center_x, win_h/3*2, background=gray)
 button_exit.position[0] = center_x - button_exit.rect.width/2
 button_exit.position[1] = center_y + button_exit.rect.height*2
-
+button_up_1 = SimpleSprite(upgrade_1_img, center_x + win_w/8, win_h/5)
+button_up_2 = SimpleSprite(upgrade_2_img, center_x + 2*win_w/8, win_h/5)
+button_up_3 = SimpleSprite(upgrade_3_img, center_x + 3*win_w/8, win_h/5)
+hub_text_back = SimpleSprite(transform.scale(black_square, (win_w/3, win_h/3)), center_x + win_w/9, win_h/3)
+hub_text_back.image.set_alpha(150)
+hub_text_1 = SimpleText('привал', 36, center_x + win_w/8, win_h/2.5-15, color=white)
+hub_text_2 = SimpleText('выберите один из апгрейдов', 24, center_x + win_w/8, win_h/2.5+50, color=white)
+hub_text_3 = SimpleText('улучшение будет стоить 10 деталей', 24, center_x + win_w/8, win_h/2.5+100, color=white)
+hub_text_4 = SimpleText('после этого - продолжите свой путь', 24, center_x + win_w/8, win_h/2.5+150, color=white)
+button_back = SimpleSprite(button_img, 0, 0)
+button_accept = SimpleText(' >улучшить< ', 36, -200, -200, background=gray)
+button_rect = SimpleSprite(button_rect_img, -200, -200)
+menu_heart = SimpleSprite(menu_heart_img, button_up_1.x, hub_text_back.rect.bottom + 25)
+menu_gear  = SimpleSprite(menu_gear_img,  button_up_2.x, menu_heart.y)
+menu_fuel  = SimpleSprite(menu_fuel_img,  button_up_3.x, menu_heart.y)
 
 while run:
     if CURRENT_SCENE == 'game':
-        mouse.set_visible(False)
+        if ENGINE: 
+            mouse.set_visible(False)
         for e in event.get():
             if e.type == QUIT:
                 run = False
@@ -309,7 +330,6 @@ while run:
                     if button_restart.rect.collidepoint(mouse.get_pos()):
                         if lives > 0 and fuel > 1:
                             sprite.spritecollide(car, walls, True)
-                            #car.replace(center_x/2, center_y)
                             ENGINE = True
                             mouse.set_visible(False)
                         else:
@@ -333,38 +353,36 @@ while run:
             x = ground.sprites()[-1].x+64
             for y in range(win_h//64+1):
                 SimpleSprite(choice(scene), x, y*64).add(scene_car, ground)
-                if chance(1) and scene != border:
+                if chance(1) and scene != border:               # ящики
                     SimpleSprite(crate_img, x, y*64).add(scene_car, crates)
-                elif chance(walls_chance) and scene == desert:
+
+                elif chance(1) and scene != border:             # бочки
+                    SimpleSprite(fuel_img, x, y*64).add(scene_car, barrels)
+
+                elif chance(walls_chance) and scene in [desert, winter]:  # стены
                     SimpleSprite(wall_img, x, y*64).add(scene_car, walls)
-                elif chance(20) and scene == swamp:
+
+                elif chance(20) and scene == swamp:             # вода
                     SimpleSprite(water_img, x, y*64).add(scene_car, water)
-                elif chance(5) and scene == winter:
-                    SimpleSprite(stone_img, x, y*64).add(scene_car, walls)
-        
+              
         for c in crates.sprites():                          # столкновение с ящиками
             if c.rect.colliderect(car.hitbox) and ENGINE:
                 c.image = broken_crate_img
-                c.rect.width = 0
-                c.rect.height = 0
-                gears += 1
-                fuel = fuel + 10
-                if fuel > 100:
-                    fuel = 100
-                if gears == 10:
-                    if scene == desert:
-                        desert_upgrade = True
-                    elif scene == swamp:
-                        swamp_upgrade = True
-                    elif scene == winter:
-                        winter_upgrade = True
-                    upgrade()
-                    gears = 0
+                c.rect.width = c.rect.height = 0
+                gears += 1                             
                 
+        for b in barrels.sprites():                         # столкновение с бочкой
+            if b.rect.colliderect(car.hitbox) and ENGINE:
+                b.image = fuel_broken_img
+                b.rect.width = b.rect.height = 0
+                fuel = fuel + 10
+                if fuel > fuel_max:
+                    fuel = fuel_max
+        
         for w in walls.sprites():                           # столкновение со стенами
             if w.rect.colliderect(car.hitbox) and ENGINE:
                 if winter_upgrade:
-                    w.image = broken_stone_img
+                    w.image = fuel_broken_img
                     w.rect.width = 0
                     w.rect.height = 0
                 else:    
@@ -387,6 +405,7 @@ while run:
         ground.reset()                                      # отрисовка графики
         crates.reset()
         crates.reset()
+        barrels.reset()
         tires.reset()
         
         shadow.replace(car.x-3, car.y+10)
@@ -424,7 +443,6 @@ while run:
             location_text.setText('')
         location_text.position[0] = win_w - location_text.rect.width
         location_text.reset()
-        walls_chance = 3 + car.kilometers//10//1000
         
         fuel_icon.replace(win_w/3.2, win_h - 75)
         fuel_icon.reset()                                       # работа с топливом
@@ -437,13 +455,11 @@ while run:
             ENGINE = False
             time_dead = time.get_ticks()
 
-        for x in range(10):                                     # интерфейс
-            if gears >= x+1:
-                gear.replace(center_x + win_w/6 + 50*x, 0)
-                gear.reset()
-            else:
-                gear_blank.replace(center_x + win_w/6 + 50*x, 0)
-                gear_blank.reset()
+
+        gears_game_text.setText('   x ' + str(gears))
+        gears_game_text.reset()
+        gear.replace(win_w - 325, 0)
+        gear.reset()
 
         for x in range(3):
             if lives >= x+1:
@@ -453,32 +469,172 @@ while run:
                 heart_blank.replace(center_x - 75 + 50*x, 0)
                 heart_blank.reset()
         
-        if car.kilometers//10 == way_len:
-            scene = current_track[0] + current_track[1]
-        elif car.kilometers//10 == way_len + 100:
-            scene = current_track[1]
-        elif car.kilometers//10 == way_len*2 + 100:
-            scene = current_track[1] + border
-        elif car.kilometers//10 == way_len*2 + 200:
-            scene = border
-        elif car.kilometers//10 == way_len*2 + 500:
-            CURRENT_SCENE = 'hub'
-        
+        if first_entry:                                             # старт локаций
+            if car.kilometers//10 == way_len: 
+                scene = current_track[0] + current_track[1]
+                if current_track[1]== winter or current_track[1] == desert:
+                    WIND, RAIN = True, False
+                elif current_track[1] == swamp:
+                    WIND, RAIN = False, True
+            elif car.kilometers//10 == way_len + 100:
+                scene = current_track[1]
+                if scene == winter or scene == desert:
+                    WIND, RAIN = True, False
+                elif scene == swamp:
+                    WIND, RAIN = False, True
+            elif car.kilometers//10 == way_len*2 + 100:
+                scene = current_track[1] + border
+            elif car.kilometers//10 == way_len*2 + 200:
+                scene = border
+                RAIN = WIND = False
+            elif car.kilometers//10 == way_len*2 + 400:
+                CURRENT_SCENE = 'hub'
+
+        else:                                                       # переход локаций
+            if car.kilometers//10 < 100:
+                scene = current_track[0] + border
+                if current_track[0] == winter or current_track[0] == desert:
+                    WIND, RAIN = True, False
+                elif current_track[0] == swamp:
+                    WIND, RAIN =  False, True
+            elif car.kilometers//10 == 100:
+                scene = current_track[0]
+                if scene == winter or scene == desert:
+                    WIND, RAIN = True, False
+                elif scene == swamp:
+                    WIND, RAIN = False, True
+            elif car.kilometers//10 == way_len + 100:
+                scene = current_track[0] + current_track[1]
+                if current_track[1]== winter or current_track[1] == desert:
+                    WIND, RAIN = True, False
+                elif current_track[1] == swamp:
+                    WIND, RAIN = False, True
+            elif car.kilometers//10 == way_len + 300:
+                scene = current_track[1]
+                if scene == winter or scene == desert:
+                    WIND, RAIN = True, False
+                elif scene == swamp:
+                    WIND, RAIN = False, True
+            elif car.kilometers//10 == way_len*2 + 300:
+                scene = current_track[1] + border
+                WIND = RAIN = False
+            elif car.kilometers//10 == way_len*2 + 500:
+                CURRENT_SCENE = 'hub'
+                first_entry = True
+     
     elif CURRENT_SCENE == 'hub':                                # сцена хаба
-        mouse.set_visible(True)
+        if first_entry:
+            mouse.set_visible(True)
+            fill_window(dark_gray)            
+            fuel_icon.replace(fuel_text.position[0] - fuel_icon.rect.width - 10, 25)
+            gears_text.position[0] = fuel_icon.x - gears_text.rect.width - 65
+            gears_text.position[1] = 35
+            button_continue.position[0] = win_w - 100 - button_continue.rect.width
+            button_exit.position[1] = button_continue.position[1]
+            button_exit.position[0] = 100
+            first_entry = False
+
         for e in event.get():
             if e.type == QUIT:
                 run = False
             if e.type == MOUSEBUTTONDOWN:
-                if button_continue.rect.collidepoint(mouse.get_pos()):
+                if button_continue.rect.collidepoint(mouse.get_pos()):          # переключение на игру
                     CURRENT_SCENE = 'game'
+                    car.kilometers = 0
+                    current_track[0] = current_track[1]
+                    current_track[1] = choice(locations)
+                    scene = current_track[0]
+                    walls_chance += 1
+                    button_accept.position = [-200, -200]
+                    button_rect.replace(-200, -200)
+                    first_entry = False              
 
-        fill_window(dark_gray)
-        fuel_text.position[0] = win_w - fuel_text.rect.width - 10
-        fuel_icon.replace(fuel_text.position[0] - fuel_icon.rect.width - 10, 25)
-        gears_text.position[0] = fuel_icon.x - gears_text.rect.width - 50
+                elif button_exit.rect.collidepoint(mouse.get_pos()):            # выход
+                    run = False
+                elif button_accept.rect.collidepoint(mouse.get_pos()):
+                    if gears >= 10:
+                        gears -= 10
+                        if button_rect.y == menu_heart.y-14 and button_rect.x == menu_heart.x-14:
+                            if lives < 3:
+                                lives += 1
+                            else:
+                                gears += 10
+                        elif button_rect.y == menu_gear.y-14 and button_rect.x == menu_gear.x-14:
+                            fuel_max += 10
+                        elif button_rect.y == menu_fuel.y-14 and button_rect.x == menu_fuel.x-14:
+                            fuel += 50
+                            if fuel > fuel_max:
+                                fuel = fuel_max
+                        elif button_rect.x == button_up_1.x-14:
+                            desert_upgrade = True
+                            button_up_1.x = - 200
+                        elif button_rect.x == button_up_2.x-14:
+                            swamp_upgrade = True
+                            button_up_2.x = - 200
+                        elif button_rect.x == button_up_3.x-14:
+                            winter_upgrade = True
+                            button_up_3.x = - 200                        
+                        upgrade()
+                        
+                elif button_up_1.rect.collidepoint(mouse.get_pos()):
+                    hub_text_1.setText('улучшение пустыни')
+                    hub_text_2.setText('> увеличивает скорость в пустыне')
+                    hub_text_3.setText('> добавляет маневренности')
+                    hub_text_4.setText('> машине требуется больше топлива')
+                    button_accept.position = [
+                        hub_text_back.x + hub_text_back.rect.width/2 - button_accept.rect.width/2, 
+                        hub_text_back.rect.bottom - button_accept.rect.height*1.5]
+                    button_rect.replace(button_up_1.x-14, button_up_1.y-32)
+                elif button_up_2.rect.collidepoint(mouse.get_pos()):
+                    hub_text_1.setText('улучшение болота')
+                    hub_text_2.setText('> увеличивает скорость в болотах')
+                    hub_text_3.setText('> машина не вязнет в трясине')
+                    hub_text_4.setText('> машине требуется больше топлива')
+                    button_accept.position = [
+                        hub_text_back.x + hub_text_back.rect.width/2 - button_accept.rect.width/2, 
+                        hub_text_back.rect.bottom - button_accept.rect.height*1.5]
+                    button_rect.replace(button_up_2.x-14, button_up_2.y-32)
+                elif button_up_3.rect.collidepoint(mouse.get_pos()):
+                    hub_text_1.setText('улучшение тундры')
+                    hub_text_2.setText('> позволяет уничтожать препятствия')
+                    hub_text_3.setText('> замедляет машину в снегах')
+                    hub_text_4.setText('> машине требуется больше топлива')
+                    button_accept.position = [
+                        hub_text_back.x + hub_text_back.rect.width/2 - button_accept.rect.width/2, 
+                        hub_text_back.rect.bottom - button_accept.rect.height*1.5]
+                    button_rect.replace(button_up_3.x-14, button_up_3.y-32)
+                elif menu_heart.rect.collidepoint(mouse.get_pos()):
+                    hub_text_1.setText('ремонт машины')
+                    hub_text_2.setText('> восстанавливает одну жизнь')
+                    hub_text_3.setText('> максимум - 3 жизни')
+                    hub_text_4.setText('> стоит 10 деталей')
+                    button_accept.position = [
+                        hub_text_back.x + hub_text_back.rect.width/2 - button_accept.rect.width/2, 
+                        hub_text_back.rect.bottom - button_accept.rect.height*1.5]
+                    button_rect.replace(menu_heart.x-14, menu_heart.y-14)
+                elif menu_gear.rect.collidepoint(mouse.get_pos()):
+                    hub_text_1.setText('расширенный бак')
+                    hub_text_2.setText('> вмещает на 10 единиц')
+                    hub_text_3.setText('   топлива больше ({})'.format(str(fuel_max+10)))
+                    hub_text_4.setText('> стоит 10 деталей')
+                    button_accept.position = [
+                        hub_text_back.x + hub_text_back.rect.width/2 - button_accept.rect.width/2, 
+                        hub_text_back.rect.bottom - button_accept.rect.height*1.5]
+                    button_rect.replace(menu_gear.x-14, menu_gear.y-14)
+                elif menu_fuel.rect.collidepoint(mouse.get_pos()):
+                    hub_text_1.setText('переработка топлива')
+                    hub_text_2.setText('> перерабатывает 10 деталей')
+                    hub_text_3.setText('   в 50 единиц топлива')
+                    hub_text_4.setText('> максимум - {} единиц'.format(str(fuel_max)))
+                    button_accept.position = [
+                        hub_text_back.x + hub_text_back.rect.width/2 - button_accept.rect.width/2, 
+                        hub_text_back.rect.bottom - button_accept.rect.height*1.5]
+                    button_rect.replace(menu_fuel.x-14, menu_fuel.y-14)
+        
+        fuel_text.setText(str(int(fuel)) + '/' + str(fuel_max))
+        gears_text.setText(str(gears))
         gear.replace(gears_text.position[0] - gear.rect.width - 10, 25)
-        button_continue.position[0] = win_w - 100 - button_continue.rect.width
+        fuel_text.position[0] = win_w - fuel_text.rect.width - 10
         
         for x in range(win_w//128 + 1):
             for y in range(win_h//128//2):
@@ -496,14 +652,21 @@ while run:
                 heart_blank.replace(gear.x - 200 + i*50, 25)
                 heart_blank.reset() 
         
-        shadow_menu.reset()
-        car_menu.reset()
-        
-        gears_text.reset()
-        fuel_text.reset()
-        gear.reset()
-        fuel_icon.reset()
-        button_continue.reset()
+        for i in [
+            shadow_menu, car_menu, gears_text, fuel_text,
+            gear, fuel_icon, button_continue]:
+            i.reset()
+        for i in [button_up_1, button_up_2, button_up_3]:
+            button_back.replace(i.x-14, i.y-32)
+            button_back.reset()
+        for i in [menu_heart, menu_gear, menu_fuel]:
+            button_back.replace(i.x-14, i.y-14)
+            button_back.reset()
+        for i in [
+            button_up_1, button_up_2, button_up_3, button_exit, hub_text_back,
+            hub_text_1, hub_text_2, hub_text_3, hub_text_4, button_accept,
+            button_rect, menu_gear, menu_heart, menu_fuel]:
+            i.reset()
 
     elif CURRENT_SCENE == 'menu':                               # сцена меню
         mouse.set_visible(True)
@@ -516,7 +679,9 @@ while run:
             elif e.type == KEYDOWN:
                 if e.key == K_ESCAPE:
                     CURRENT_SCENE = 'game'
-    
+
+        button_exit.position[0] = center_x - button_exit.rect.width/2
+        button_exit.position[1] = center_y + button_exit.rect.height*2
         button_continue.position[0] = center_x - button_continue.rect.width/2
         button_continue.position[1] = center_y - button_continue.rect.height*2
         button_continue.reset()
