@@ -167,11 +167,11 @@ if cutscene:
         transform.scale(black_square, (win_w, win_h/5)), 0, 0)
     R2 = SimpleSprite(
         transform.scale(black_square, (win_w, win_h/5)), 0, win_h*0.8)
-    text_up = SimpleText('год 2052', 64, win_w/2, win_h*0.1, color = white)
+    text_up = SimpleText('год 1999', 64, win_w/2, win_h*0.1, color = white)
     text_up.position[0] = win_w/2 - text_up.rect.width/2
-    text_down = SimpleText('ты последний выживший', 64, win_w/2, win_h*0.9, color = white)
+    text_down = SimpleText('ты последний хокаге', 64, win_w/2, win_h*0.9, color = white)
     text_down.position[0] = win_w/2 - text_down.rect.width/2
-    text_center = SimpleText('CHANGES', 100, win_w/2, win_h/2)
+    text_center = SimpleText('NARUTO', 100, win_w/2, win_h/2)
     text_center.position[0] = center_x - text_down.rect.width/1.7
     text_center.position[1] = center_y - text_down.rect.height/2
 
@@ -288,7 +288,7 @@ while cutscene:
             SimpleSprite(black_square_50, car.x, car.y+20).add(scene_car, tires)
         else:
             car.right()
-    if time_passed > 11550: #9400
+    if time_passed > 9400: #9400 -mod ; 11550 -nomod
         text_center.reset()
     if time_passed > 12500:
         if R1.y > -win_h/4:
