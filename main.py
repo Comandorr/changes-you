@@ -225,7 +225,7 @@ menu_fuel  = SimpleSprite(menu_fuel_img,  button_up_3.x, menu_heart.y)
 
 
 if MUSIC:                                                   # включение музыки
-    music.play(paint_it_black, 100)
+    music.play(paint_it_black, 100)       
 start_time = time.get_ticks()
 
 while cutscene:
@@ -309,7 +309,7 @@ while cutscene:
 
 
 while run:
-    if CURRENT_SCENE == 'game':
+    if CURRENT_SCENE == 'game':                                 # сцена игры
         if ENGINE: 
             mouse.set_visible(False)
         for e in event.get():
@@ -406,7 +406,7 @@ while run:
                     car.speed *= 0.5
 
         if scene == desert and desert_upgrade:              # ускорение в пустыне
-            car.speed *= 1.5
+            car.speed *= 1.25
         if scene == winter and winter_upgrade:              # торможение в тундре
             car.speed *= 0.75
 
@@ -436,6 +436,7 @@ while run:
                 if lives == 0 or fuel <= 0.5:
                     button_restart.setText(' игра окончена ')
                     button_restart.position[0] = center_x - button_restart.rect.width/2
+                    music.set_volume(0.5)
                 button_restart.reset()
 
         kilometers_text.setText(str(int(car.kilometers//10)) + ' м')
@@ -454,7 +455,7 @@ while run:
         
         fuel_icon.replace(win_w/3.2, win_h - 75)
         fuel_icon.reset()                                       # работа с топливом
-        fuel_bar.image = transform.scale(fuel_bar.image, (win_w/3 * fuel/100, 20))
+        fuel_bar.image = transform.scale(fuel_bar.image, (win_w/3 * fuel/fuel_max, 20))
         fuel_bar_shadow.reset()
         fuel_bar.reset()
         if ENGINE:
@@ -585,12 +586,16 @@ while run:
                                 gears += 10
                         elif button_rect.y == menu_gear.y-14 and button_rect.x == menu_gear.x-14:
                             fuel_max += 10
+                            fuel += 10
+                            if fuel > fuel_max:
+                                fuel = fuel_max
                         elif button_rect.y == menu_fuel.y-14 and button_rect.x == menu_fuel.x-14:
                             fuel += 50
                             if fuel > fuel_max:
                                 fuel = fuel_max
                         elif button_rect.x == button_up_1.x-14:
                             desert_upgrade = True
+                            car.orig_speed *= 1.25
                             button_up_1.x = - 200
                         elif button_rect.x == button_up_2.x-14:
                             swamp_upgrade = True
@@ -602,7 +607,7 @@ while run:
                         
                 elif button_up_1.rect.collidepoint(mouse.get_pos()):
                     hub_text_1.setText('улучшение пустыни')
-                    hub_text_2.setText('> увеличивает скорость в пустыне')
+                    hub_text_2.setText('> увеличивает скорость машины')
                     hub_text_3.setText('> добавляет маневренности')
                     hub_text_4.setText('> машине требуется больше топлива')
                     button_accept.position = [
@@ -717,6 +722,7 @@ while run:
     display.update()
     clock.tick(60)
 
+
 if scene == finish:
     cutscene = True
     start_time = time.get_ticks()
@@ -729,7 +735,6 @@ if scene == finish:
     
     R0.image.set_alpha(0)
     
-
 while cutscene:
     time_passed = time.get_ticks() - start_time
     for e in event.get():
