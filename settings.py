@@ -1,4 +1,4 @@
-window_width, window_height = 1920, 1080
+window_width, window_height = 0, 0
 #window_width, window_height = 800, 600
 
 walls_chance = 3
