@@ -166,7 +166,7 @@ if cutscene:
     R1 = SimpleSprite(
         transform.scale(black_square, (win_w, win_h/5)), 0, 0)
     R2 = SimpleSprite(
-        transform.scale(black_square, (win_w, win_h/5)), 0, win_h*0.8)
+        transform.scale(black_square, (win_w, win_h/5)), 0, win_h*0.8+1)
     text_up = SimpleText('год 2052', 64, win_w/2, win_h*0.1, color = white)
     text_up.position[0] = win_w/2 - text_up.rect.width/2
     text_down = SimpleText('ты последний выживший', 64, win_w/2, win_h*0.9, color = white)
