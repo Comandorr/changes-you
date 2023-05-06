@@ -166,14 +166,14 @@ if cutscene:
     R1 = SimpleSprite(
         transform.scale(black_square, (win_w, win_h/5)), 0, 0)
     R2 = SimpleSprite(
-        transform.scale(black_square, (win_w, win_h/5)), 0, win_h*0.8)
+        transform.scale(black_square, (win_w, win_h/5)), 0, win_h*0.8+1)
     text_up = SimpleText('год 1999', 64, win_w/2, win_h*0.1, color = white)
     text_up.position[0] = win_w/2 - text_up.rect.width/2
     text_down = SimpleText('ты последний хокаге', 64, win_w/2, win_h*0.9, color = white)
     text_down.position[0] = win_w/2 - text_down.rect.width/2
     text_center = SimpleText('NARUTO', 100, win_w/2, win_h/2)
-    text_center.position[0] = center_x - text_down.rect.width/1.7
-    text_center.position[1] = center_y - text_down.rect.height/2
+    text_center.position[0] = center_x - text_center.rect.width
+    text_center.position[1] = center_y - text_center.rect.height/2
 
 
 button_restart = SimpleText(

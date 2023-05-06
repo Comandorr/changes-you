@@ -33,11 +33,11 @@ def chance(x, max = 101):
 # creates a window using width and height
 def create_window(w, h):
     global window, win_w, win_h, center_x, center_y
-    win_w = w
-    win_h = h
-    center_x = w/2
-    center_y = h/2
     window = display.set_mode((w, h), FULLSCREEN, OPENGL, vsync = 1)
+    win_w = display.get_surface().get_rect().width
+    win_h = display.get_surface().get_rect().height
+    center_x = win_w/2
+    center_y = win_h/2
     return window
 
 
