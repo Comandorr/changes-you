@@ -315,10 +315,6 @@ while run:
             if e.type == QUIT:
                 run = False
             if e.type == KEYDOWN:
-                if e.key == K_1:
-                    WIND = not WIND
-                if e.key == K_2:
-                    RAIN = not RAIN
                 if e.key == K_ESCAPE:
                     CURRENT_SCENE = 'menu'
                 if e.key == K_SPACE:
